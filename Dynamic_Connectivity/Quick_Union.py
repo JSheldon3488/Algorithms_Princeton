@@ -6,7 +6,8 @@ class Quick_Union():
     Note that self.tree is a List but actually represents a tree data structure where each value in the array tells
     us who that nodes parent is. self.size is used for the weighted union so that we can always combine the root of the
     smaller tree with the root of the larger tree. N + Mlg*(N) running time for N objects and M union-find operations (almost linear).
-    10^9 union and find with 10^9 objects using WQUPC reduces the time from 30 years to 6 seconds!
+    10^9 union and find with 10^9 objects using WQUPC (Weighted Quick-Union with Path Compression) reduces the time
+    from 30 years to 6 seconds!
     """
 
     def __init__(self, n: int):
