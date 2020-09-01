@@ -15,6 +15,7 @@ Need:
     * Follow their provided API
     * IllegalArgumentException if open(), isOpen(), isFull() is outside prescribed range, or n < 1 in constructor
 """
+import random
 
 class Percolation:
     """ Provided API from the assignment to solve for the percolation probability. """
@@ -22,6 +23,7 @@ class Percolation:
     def __init__(self, n: int):
         """ Creates n-by-n grid, with all sites initially blocked. """
         if n < 1:
+            print("Percolation Initialization Failed")
             raise IllegalArgumentException
         else:
             self.grid = [[0 for _ in range(n)] for _ in range(n)]
@@ -30,32 +32,38 @@ class Percolation:
             self.total = n**2
             self.quick_union = QuickUnionExtended(self.total)
 
-    def valid_cell(self, row: int, col: int) -> bool:
-        return 0 <= row < self.n and 0 <= col < self.n
-
     def open(self, row: int, col: int):
         """ Opens the site (row,col) if it is not open already and update the appropriate unions """
-        if not self.valid_cell(row,col):
-            raise IllegalArgumentException
-        elif not self.is_open(row, col):
-            self.grid[row][col] = 1
-            self.open_count += 1
-            # Connect all the valid nearby open sites
-            # Left
-            if self.valid_cell(row, col-1) and self.is_open(row, col-1):
-                self.quick_union.union(p=(row * self.n + col), q=(row * self.n + col - 1))
-            # Right
-            if self.valid_cell(row, col+1) and self.is_open(row, col+1):
-                self.quick_union.union(p=(row * self.n + col), q=(row * self.n + col + 1))
-            # Up
-            if self.valid_cell(row-1, col) and self.is_open(row-1, col):
-                self.quick_union.union(p=(row - 1) * self.n + col, q=(row - 1) * self.n + col)
-            # Down
-            if self.valid_cell(row+1, col) and self.is_open(row+1, col):
-                self.quick_union.union(p=(row + 1) * self.n + col, q=(row + 1) * self.n + col)
+        # Already open, nothing to do here
+        if self.is_open(row, col):
+            return
+
+        # Open the closed cell
+        self.grid[row][col] = 1
+        self.open_count += 1
+        # Connect newly opened cell to all open neighbors
+        # Left
+        if self.valid_cell(row, col-1) and self.is_open(row, col-1):
+            self.quick_union.union(p=(row * self.n + col), q=(row * self.n + col - 1))
+        # Right
+        if self.valid_cell(row, col+1) and self.is_open(row, col+1):
+            self.quick_union.union(p=(row * self.n + col), q=(row * self.n + col + 1))
+        # Up
+        if self.valid_cell(row-1, col) and self.is_open(row-1, col):
+            self.quick_union.union(p=row*self.n + col, q=(row - 1)*self.n + col)
+        # Down
+        if self.valid_cell(row+1, col) and self.is_open(row+1, col):
+            self.quick_union.union(p=row*self.n + col, q=(row + 1)*self.n + col)
+
+    def valid_cell(self, row: int, col: int) -> bool:
+        """ Returns if this is a valid cell in the grid """
+        return 0 <= row < self.n and 0 <= col < self.n
 
     def is_open(self, row: int, col: int):
-        """ returns if the position (row,col) is open """
+        """ Returns if the position (row,col) is open """
+        if not self.valid_cell(row, col):
+            print(f'Row: {row}, Col: {col} is not Valid')
+            raise IllegalArgumentException
         return self.grid[row][col]
 
     def is_full(self, row: int, col: int) -> bool:
@@ -64,6 +72,7 @@ class Percolation:
         Note: A full site is an open site that can be connected to an open site in the top row via a chain of neighboring open sites.
         """
         if not self.valid_cell(row, col):
+            print("Shouldn't be here")
             raise IllegalArgumentException
         if not self.is_open(row, col):
             return False
@@ -77,9 +86,19 @@ class Percolation:
         """ Returns if the system percolates or not """
         return self.quick_union.tree[self.quick_union.virtual_bottom] == self.quick_union.virtual_top
 
-    def simulation(self):
+    def simulation(self) -> float:
         """ Run a simulation to get the percolation probability """
-        # TODO
+        while not self.percolates():
+            row = random.randint(0, self.n-1)
+            col = random.randint(0, self.n-1)
+            self.open(row, col)
+
+        return self.open_count / self.total
+
+    def reset(self):
+        self.grid = [[0 for _ in range(self.n)] for _ in range(self.n)]
+        self.open_count = 0
+        self.quick_union = QuickUnionExtended(self.total)
 
 
 class QuickUnionExtended:
@@ -89,15 +108,18 @@ class QuickUnionExtended:
     """
 
     def __init__(self, n: int):
-        self.tree = [i for i in range(n)] + [n] + [n+1]    # Index n is virtual bottom, n+1 virtual top
-        self.size = [1 for i in range(n)]
+        # Setup Tree Data Structure
+        sqr_root = int(n**(1/2))
         self.virtual_top = n+1
         self.virtual_bottom = n
+        self.tree = [i for i in range(n)]
+        self.tree[0:sqr_root] = [self.virtual_top]*sqr_root   # First row points to virtual top
+        self.tree[-sqr_root:] = [self.virtual_bottom]*sqr_root    # Last row points to virtual bottom
+        # Add virtual top and bottom to tree
+        self.tree += [self.virtual_bottom, self.virtual_top]
+        # Size array for weighted unions
+        self.size = [1 for i in range(n)]
 
-        # Point the first sqrt(n) and last sqrt(n) items at the virtual top and bottom
-        sqr_root = int(n**(1/2))
-        self.tree[0:sqr_root] = [n+1]*sqr_root
-        self.tree[-sqr_root:] = [n]*sqr_root
 
     def root(self, node: int) -> int:
         """ finds and returns the root for this node """
