@@ -3,6 +3,7 @@ a suite of statistics about the simulation results. """
 
 from Percolation import Percolation
 import numpy as np
+from tqdm import tqdm
 
 
 class PercolationStats:
@@ -20,11 +21,11 @@ class PercolationStats:
         results = []
         percolator = Percolation(self.size)
 
-        for _ in range(num_sims):
+        for _ in tqdm(range(num_sims)):
             results.append(percolator.simulation())
             percolator.reset()
-        result = np.asarray(results)
 
+        result = np.asarray(results)
         self.mean = np.mean(results)
         self.stddev = np.std(results)
         self.ci_low = self.mean - 1.96 * self.stddev * (1 / (self.size ** (1 / 2)))
