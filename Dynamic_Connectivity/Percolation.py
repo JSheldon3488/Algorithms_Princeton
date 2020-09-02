@@ -43,16 +43,16 @@ class Percolation:
         self.open_count += 1
         # Connect newly opened cell to all open neighbors
         # Left
-        if self.valid_cell(row, col-1) and self.is_open(row, col-1):
+        if self.is_open(row, col-1):
             self.quick_union.union(p=(row * self.n + col), q=(row * self.n + col - 1))
         # Right
-        if self.valid_cell(row, col+1) and self.is_open(row, col+1):
+        if self.is_open(row, col+1):
             self.quick_union.union(p=(row * self.n + col), q=(row * self.n + col + 1))
         # Up
-        if self.valid_cell(row-1, col) and self.is_open(row-1, col):
+        if self.is_open(row-1, col):
             self.quick_union.union(p=row*self.n + col, q=(row - 1)*self.n + col)
         # Down
-        if self.valid_cell(row+1, col) and self.is_open(row+1, col):
+        if self.is_open(row+1, col):
             self.quick_union.union(p=row*self.n + col, q=(row + 1)*self.n + col)
 
     def valid_cell(self, row: int, col: int) -> bool:
@@ -61,20 +61,17 @@ class Percolation:
 
     def is_open(self, row: int, col: int):
         """ Returns if the position (row,col) is open """
-        if not self.valid_cell(row, col):
-            raise Exception(f'Row: {row}, Col: {col} is not Valid')
-        return self.grid[row][col]
+        if self.valid_cell(row, col):
+            return self.grid[row][col]
+        return False
 
     def is_full(self, row: int, col: int) -> bool:
         """ Returns if the position (row,col) is full.
-
         Note: A full site is an open site that can be connected to an open site in the top row via a chain of neighboring open sites.
         """
-        if not self.valid_cell(row, col):
-            raise Exception(f'Row: {row}, Col: {col} is not Valid')
-        if not self.is_open(row, col):
-            return False
-        return self.quick_union.root((row*self.n + col)) == self.quick_union.virtual_top
+        if self.is_open(row, col):
+            return self.quick_union.root((row*self.n + col)) == self.quick_union.virtual_top
+        return False
 
     def number_of_open_sites(self) -> int:
         """ Returns the number of open sites """
