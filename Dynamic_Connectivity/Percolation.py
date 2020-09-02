@@ -1,3 +1,4 @@
+# TODO: Refactor
 """ This Module is the Week 1 Assignment for doing simulations to solve for the 'percolation probability'.
 
 Problem Statement: Write a program to estimate the value of the percolation threshold via Monte Carlo simulation.
@@ -23,8 +24,7 @@ class Percolation:
     def __init__(self, n: int):
         """ Creates n-by-n grid, with all sites initially blocked. """
         if n < 1:
-            print("Percolation Initialization Failed")
-            raise IllegalArgumentException
+            raise Exception(f'Percolation Initialization Failed: Input must be > 0, Received {n}')
         else:
             self.grid = [[0 for _ in range(n)] for _ in range(n)]
             self.n = n
@@ -62,8 +62,7 @@ class Percolation:
     def is_open(self, row: int, col: int):
         """ Returns if the position (row,col) is open """
         if not self.valid_cell(row, col):
-            print(f'Row: {row}, Col: {col} is not Valid')
-            raise IllegalArgumentException
+            raise Exception(f'Row: {row}, Col: {col} is not Valid')
         return self.grid[row][col]
 
     def is_full(self, row: int, col: int) -> bool:
@@ -72,8 +71,7 @@ class Percolation:
         Note: A full site is an open site that can be connected to an open site in the top row via a chain of neighboring open sites.
         """
         if not self.valid_cell(row, col):
-            print("Shouldn't be here")
-            raise IllegalArgumentException
+            raise Exception(f'Row: {row}, Col: {col} is not Valid')
         if not self.is_open(row, col):
             return False
         return self.quick_union.root((row*self.n + col)) == self.quick_union.virtual_top
@@ -120,7 +118,6 @@ class QuickUnionExtended:
         # Size array for weighted unions
         self.size = [1 for i in range(n)]
 
-
     def root(self, node: int) -> int:
         """ finds and returns the root for this node """
         while self.tree[node] != node:
@@ -155,7 +152,3 @@ class QuickUnionExtended:
         else:
             self.tree[q_root] = p_root
             self.size[p_root] += self.size[q_root]
-
-
-class IllegalArgumentException(Exception):
-    print("Invalid Argument!")
