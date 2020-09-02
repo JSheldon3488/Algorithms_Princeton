@@ -4,6 +4,7 @@ a suite of statistics about the simulation results. """
 from Percolation import Percolation
 import numpy as np
 from tqdm import tqdm
+from typing import List
 
 
 class PercolationStats:
@@ -35,6 +36,10 @@ class PercolationStats:
         """ Prints out a report of the results of the simulation """
         print(f'Simulation Mean: {self.mean:.5}, Simulation Std_Dev: {self.stddev:.5}')
         print(f'95% Confidence Interval: ({self.ci_low:.5} - {self.ci_high:.5})')
+
+    def time_sim(self, sizes: List[int]):
+        # TODO: Write time simulation function with plotting
+        pass
 
 
 def main():
